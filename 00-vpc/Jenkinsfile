@@ -49,7 +49,7 @@ pipeline {
                     }
                 }
             }
-    stage('apply'){
+        stage('apply'){
             // input {
             //     message "Should we continue?"
             //     ok "Yes, we should."
@@ -66,10 +66,9 @@ pipeline {
                     }
                 }
             }
-        }
 
-    // Down stream job
-    stage('Trigger SG'){
+        // Down stream job
+        stage('Trigger SG'){
             steps {
                 script {
                     build job: '10-sg', // Replace 'DownstreamJobName' with the actual name of your downstream job
@@ -77,6 +76,9 @@ pipeline {
                     wait: false // VPC will not wait for SG pipeline completion
                 }
             }
+        }
+    }
+
 	
     post { 
         always { 
