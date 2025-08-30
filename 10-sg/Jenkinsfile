@@ -68,19 +68,19 @@ pipeline {
             }
     stage('Bastion ACM EKS ALB'){
             parallel {
-                stage('Trigger Bastion'){
+                stage('Trigger EKS'){
                     steps {
                         script {
-                            build job: '20-bastion', // Replace 'DownstreamJobName' with the actual name of your downstream job
+                            build job: '60-eks', // Replace 'DownstreamJobName' with the actual name of your downstream job
                             propagate: false, // even SG fails VPC will not be effected
                             wait: false // VPC will not wait for SG pipeline completion
                         }
                 }
             }
-                stage('Trigger EKS'){
+                stage('Trigger Baston'){
                     steps {
                         script {
-                            build job: '60-eks', // Replace 'DownstreamJobName' with the actual name of your downstream job
+                            build job: '20-bastion', // Replace 'DownstreamJobName' with the actual name of your downstream job
                             propagate: false, // even SG fails VPC will not be effected
                             wait: false // VPC will not wait for SG pipeline completion
                         }
