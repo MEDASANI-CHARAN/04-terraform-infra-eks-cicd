@@ -32,7 +32,7 @@ pipeline {
                     withAWS(credentials: 'aws-creds', region: 'us-east-1') {
                             sh """
                                 cd 60-eks
-                                terraform init -reconfigure -upgrade
+                                terraform init -reconfigure
                             """
                         }
                     }
@@ -62,7 +62,7 @@ pipeline {
                     withAWS(credentials: 'aws-creds', region: 'us-east-1') {
                             sh """
                                 cd 60-eks
-                                terraform destroy -auto-approve
+                                terraform apply -auto-approve
                             """
                         }
                     }
