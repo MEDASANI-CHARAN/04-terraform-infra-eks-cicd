@@ -38,30 +38,20 @@ pipeline {
                     }
                 }
             }
-         stage('Import Cluster If Exists') {
-    steps {
-        script {
-            dir("60-eks") {
-                withAWS(credentials: 'aws-creds', region: "${REGION}") {
-                    def status = sh (
-                        script: "aws eks describe-cluster --name ${CLUSTER} --region ${REGION} >/dev/null 2>&1",
-                        returnStatus: true
-                    )
-                    if (status == 0) {
-                        echo "✅ EKS Cluster ${CLUSTER} exists in AWS. Importing into Terraform state..."
-                        // Import only if it's not already in Terraform state
+        stage('Import Cluster If Exists') {
+            steps {
+                dir("60-eks") {
+                    withAWS(credentials: 'aws-creds', region: "${REGION}") {
                         sh """
-                            terraform state list | grep 'module.eks.aws_eks_cluster.this' || \
-                            terraform import module.eks.aws_eks_cluster.this[0] ${CLUSTER}
+                        aws eks describe-cluster --name ${CLUSTER} --region ${REGION} >/dev/null 2>&1 && \
+                        (terraform state list | grep 'module.eks.aws_eks_cluster.this' || terraform import module.eks.aws_eks_cluster.this[0] ${CLUSTER}) || \
+                        echo "ℹ️ Cluster ${CLUSTER} not found. Terraform will create it."
                         """
-                    } else {
-                        echo "ℹ️ EKS Cluster ${CLUSTER} not found. Terraform will create it."
                     }
                 }
             }
         }
-    }
-}
+
         stage('plan'){
             steps {
                 script {
