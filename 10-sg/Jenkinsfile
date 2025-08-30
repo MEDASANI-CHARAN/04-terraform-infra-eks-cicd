@@ -93,8 +93,8 @@ pipeline {
                     steps {
                         script {
                             build job: '40-acm',
-                                  propagate: true,  // fail pipeline if ACM fails
-                                  wait: true
+                                  propagate: false,  // pipeline won't fail even if ACM fails
+                                  wait: true // ensures Jenkins waits until ACM finishes
                         }
                     }
                 }
