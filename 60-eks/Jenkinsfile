@@ -38,21 +38,6 @@ pipeline {
                     }
                 }
             }
-        stage('Import Cluster If Exists') {
-            steps {
-                dir("60-eks") {
-                    withAWS(credentials: 'aws-creds', region: "${REGION}") {
-                        sh """
-                          aws eks describe-cluster --name ${CLUSTER} --region ${REGION} >/dev/null 2>&1 && \
-                          (terraform state list | grep 'module.eks.aws_eks_cluster.this' || terraform import module.eks.aws_eks_cluster.this[0] ${CLUSTER}) || \
-                          echo "ℹ️ Cluster ${CLUSTER} not found. Terraform will create it."
-                        """
-                        // Refresh state after import so Terraform doesn’t try to re-create the cluster
-                        sh "terraform plan -refresh-only -no-color"
-                    }
-                }
-            }
-        }
 
         stage('plan'){
             steps {
