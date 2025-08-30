@@ -57,7 +57,7 @@ pipeline {
                     withAWS(credentials: 'aws-creds', region: 'us-east-1') {
                         sh """
                             cd 10-sg
-                            terraform apply -auto-approve
+                            terraform destroy -auto-approve
                         """
                     }
                 }
