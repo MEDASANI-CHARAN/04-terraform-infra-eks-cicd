@@ -1,15 +1,15 @@
 pipeline {
-	agent {
+    agent {
         label 'AGENT-1'
     }
-    environment {
+    environment { 
         appVersion = ''
-        REGION = 'us-east-1'
+        REGION = "us-east-1"
         ACC_ID = '009160060207'
-        PROJECT = 'roboshop'
+        PROJECT = "roboshop"
     }
     options {
-        timeout(time: 10, unit: 'MINUTES') 
+        timeout(time: 30, unit: 'MINUTES') 
         disableConcurrentBuilds()
         ansiColor('xterm')
     }
@@ -24,106 +24,103 @@ pipeline {
 
         password(name: 'PASSWORD', defaultValue: 'SECRET', description: 'Enter a password')
     } */
-	stages {
-        stage('init'){
+    stages {
+        stage('init') {
             steps {
                 script {
                     withAWS(credentials: 'aws-creds', region: 'us-east-1') {
-                            sh """
-                                cd 10-sg
-                                terraform init -reconfigure
-                            """
-                        }
+                        sh """
+                            cd 10-sg
+                            terraform init -reconfigure
+                        """
                     }
                 }
             }
-        stage('plan'){
-            steps {
-                script {
-                    withAWS(credentials: 'aws-creds', region: 'us-east-1') {
-                            sh """
-                                cd 10-sg
-                                terraform plan
-                            """
-                        }
-                    }
-                }
-            }
-    stage('apply'){
-            // input {
-            //     message "Should we continue?"
-            //     ok "Yes, we should."
-            //     submitter "alice,bob"
-            // }
-            steps {
-                script {
-                    withAWS(credentials: 'aws-creds', region: 'us-east-1') {
-                            sh """
-                                cd 10-sg
-                                terraform apply -auto-approve
-                            """
-                        }
-                    }
-                }
-            }
-    stage('Bastion ACM EKS ALB'){
-            parallel {
-                stage('Trigger EKS'){
-                    steps {
-                        script {
-                            build job: '60-eks', // Replace 'DownstreamJobName' with the actual name of your downstream job
-                            propagate: false, // even SG fails VPC will not be effected
-                            wait: false // VPC will not wait for SG pipeline completion
-                        }
-                }
-            }
-                stage('Trigger Baston'){
-                    steps {
-                        script {
-                            build job: '20-bastion', // Replace 'DownstreamJobName' with the actual name of your downstream job
-                            propagate: false, // even SG fails VPC will not be effected
-                            wait: false // VPC will not wait for SG pipeline completion
-                        }
-                }
-            }
-            stage('ACM ALB') {
-                // sequential
-                stages {
-                   stage('Trigger ACM'){
-                        steps {
-                            script {
-                                build job: '40-acm', // Replace 'DownstreamJobName' with the actual name of your downstream job
-                                propagate: false, // even SG fails VPC will not be effected
-                                wait: false // VPC will not wait for SG pipeline completion
-                            }
-                        }
-                    } 
-                    stage('Trigger ALB'){
-                        steps {
-                            script {
-                                build job: '50-ingress-alb', // Replace 'DownstreamJobName' with the actual name of your downstream job
-                                propagate: false, // even SG fails VPC will not be effected
-                                wait: false // VPC will not wait for SG pipeline completion
-                            }
-                        }
-                    } 
-                }
-            }
+        }
 
+        stage('plan') {
+            steps {
+                script {
+                    withAWS(credentials: 'aws-creds', region: 'us-east-1') {
+                        sh """
+                            cd 10-sg
+                            terraform plan
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('apply') {
+            steps {
+                script {
+                    withAWS(credentials: 'aws-creds', region: 'us-east-1') {
+                        sh """
+                            cd 10-sg
+                            terraform apply -auto-approve
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Bastion & EKS in Parallel') {
+            parallel {
+                stage('Trigger Bastion') {
+                    steps {
+                        script {
+                            build job: '20-bastion',
+                                  propagate: false,
+                                  wait: false
+                        }
+                    }
+                }
+                stage('Trigger EKS') {
+                    steps {
+                        script {
+                            build job: '80-eks',
+                                  propagate: false,
+                                  wait: false
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('ACM → ALB') {
+            stages {
+                stage('Trigger ACM') {
+                    steps {
+                        script {
+                            build job: '60-acm',
+                                  propagate: true,  // fail pipeline if ACM fails
+                                  wait: true
+                        }
+                    }
+                }
+                stage('Trigger ALB') {
+                    steps {
+                        script {
+                            build job: '70-frontend-alb',
+                                  propagate: false,
+                                  wait: true // ensures Jenkins waits until ALB finishes
+                        }
+                    }
+                }
+            }
         }
     }
-}
-	
+
     post { 
         always { 
             echo 'I will always say Hello again!'
             deleteDir()
         }
         success { 
-            echo 'I will always say success!'
+            echo 'I will always say Success'
         }
         failure { 
-            echo 'I will always say failure!'
+            echo 'I will always say Failure'
         }
     }
-} 
+}
