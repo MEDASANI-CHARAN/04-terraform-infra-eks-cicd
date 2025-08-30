@@ -2,8 +2,6 @@ module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   version = "~> 21.0" # this is module version
 
-  create = false   # 👈 prevents cluster re-creation
-
   name               = "${var.project}-${var.environment}"
   kubernetes_version = "1.32"
 
