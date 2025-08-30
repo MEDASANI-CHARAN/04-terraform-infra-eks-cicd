@@ -66,7 +66,15 @@ pipeline {
                     }
                 }
             }
-    }
+        }
+    stage('Trigger SG'){
+            steps {
+                script {
+                    build job: '10-sg', // Replace 'DownstreamJobName' with the actual name of your downstream job
+                    propagate: false,
+                    wait: true
+                }
+            }
 	
     post { 
         always { 

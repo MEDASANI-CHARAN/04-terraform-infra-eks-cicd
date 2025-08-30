@@ -50,17 +50,17 @@ pipeline {
                 }
             }
     stage('apply'){
-            input {
-                message "Should we continue?"
-                ok "Yes, we should."
-                submitter "alice,bob"
-            }
+            // input {
+            //     message "Should we continue?"
+            //     ok "Yes, we should."
+            //     submitter "alice,bob"
+            // }
             steps {
                 script {
                     withAWS(credentials: 'aws-creds', region: 'us-east-1') {
                             sh """
                                 cd 10-sg
-                                terraform apply -auto-approve
+                                terraform destroy -auto-approve
                             """
                         }
                     }
