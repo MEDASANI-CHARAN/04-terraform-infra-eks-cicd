@@ -78,7 +78,7 @@ pipeline {
                 stage('Trigger EKS') {
                     steps {
                         script {
-                            build job: '80-eks',
+                            build job: '60-eks',
                                   propagate: false,
                                   wait: false
                         }
@@ -92,7 +92,7 @@ pipeline {
                 stage('Trigger ACM') {
                     steps {
                         script {
-                            build job: '60-acm',
+                            build job: '40-acm',
                                   propagate: true,  // fail pipeline if ACM fails
                                   wait: true
                         }
@@ -101,7 +101,7 @@ pipeline {
                 stage('Trigger ALB') {
                     steps {
                         script {
-                            build job: '70-frontend-alb',
+                            build job: '50-ingress-alb',
                                   propagate: false,
                                   wait: true // ensures Jenkins waits until ALB finishes
                         }
