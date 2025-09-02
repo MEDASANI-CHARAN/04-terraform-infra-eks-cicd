@@ -28,7 +28,7 @@ module "eks" {
   control_plane_subnet_ids = local.private_subnet_ids
 
   create_node_security_group = false
-  create_security_group = false 
+  create_security_group = false
   security_group_id = local.eks_control_plane_sg_id
   node_security_group_id = local.eks_node_sg_id
 
@@ -71,8 +71,9 @@ module "eks" {
     #     }
     #   }
     # }
+  }
 
-    # 👇 Add access entry for TerraformAdmin role
+  # 👇 Add access entry for TerraformAdmin role
     access_entries = {
       TerraformAdmin = {
         principal_arn = "arn:aws:iam::009160060207:role/TerraformAdmin"
@@ -83,7 +84,6 @@ module "eks" {
         }
       }
     }
-  }
 
   tags = merge(
     local.common_tags,
