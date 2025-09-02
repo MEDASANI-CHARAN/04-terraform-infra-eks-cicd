@@ -73,17 +73,23 @@ module "eks" {
     # }
   }
 
-  # 👇 Add access entry for TerraformAdmin role
-    access_entries = {
-      TerraformAdmin = {
-        principal_arn = "arn:aws:iam::009160060207:role/TerraformAdmin"
-        policy_associations = {
-          admin = {
-            policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
-          }
+  access_entries = {
+  TerraformAdmin = {
+    principal_arn = "arn:aws:iam::009160060207:role/TerraformAdmin"
+
+    policy_associations = {
+      admin = {
+        policy_arn  = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+
+        # 👇 Required field
+        access_scope = {
+          type       = "cluster"
+          namespaces = []  # empty = full cluster scope
         }
       }
     }
+  }
+}
 
   tags = merge(
     local.common_tags,
